@@ -1,0 +1,20 @@
+QPushButton {
+    background-color: white;
+    font-family: "Microsoft Yahei";
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 5%;
+    position: relative;
+}
+
+QPushButton:hover {
+    background-color: #e2e6ea;
+}
+
+QPushButton:active {
+    top: 2px;
+}
+
+QTabWidget, QLabel, QLineEdit, QSpinBox {
+    font-family: "Microsoft Yahei";
+}

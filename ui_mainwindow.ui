@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>561</width>
+    <height>607</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>FTP 客户端</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>bootstrap-icons-1.0.0/terminal-fill.svg</normaloff>bootstrap-icons-1.0.0/terminal-fill.svg</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QPushButton" name="new_conn">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>新建会话</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Server</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="1" column="0">
+         <widget class="QTableWidget" name="file_list">
+          <property name="showGrid">
+           <bool>false</bool>
+          </property>
+          <property name="columnCount">
+           <number>3</number>
+          </property>
+          <column/>
+          <column/>
+          <column/>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="path">
+          <property name="text">
+           <string>当前路径：</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QDockWidget" name="dock">
+   <property name="windowTitle">
+    <string>传输记录</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout"/>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>561</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="nativeMenuBar">
+    <bool>true</bool>
+   </property>
+   <widget class="QMenu" name="file">
+    <property name="title">
+     <string>文件(&amp;F)</string>
+    </property>
+    <addaction name="new_server"/>
+    <addaction name="separator"/>
+    <addaction name="close_server"/>
+    <addaction name="separator"/>
+    <addaction name="setting"/>
+    <addaction name="separator"/>
+    <addaction name="quit"/>
+   </widget>
+   <widget class="QMenu" name="edit">
+    <property name="title">
+     <string>编辑(&amp;E)</string>
+    </property>
+    <addaction name="copy"/>
+    <addaction name="paste"/>
+   </widget>
+   <widget class="QMenu" name="cmd">
+    <property name="title">
+     <string>命令(&amp;C)</string>
+    </property>
+    <widget class="QMenu" name="conn_mode">
+     <property name="title">
+      <string>数据连接类型</string>
+     </property>
+     <addaction name="passive"/>
+     <addaction name="active"/>
+    </widget>
+    <widget class="QMenu" name="new_path">
+     <property name="title">
+      <string>新建(&amp;N)</string>
+     </property>
+     <addaction name="new_dir"/>
+     <addaction name="new_file"/>
+    </widget>
+    <addaction name="conn_mode"/>
+    <addaction name="separator"/>
+    <addaction name="new_path"/>
+    <addaction name="separator"/>
+    <addaction name="ftp_cmd"/>
+   </widget>
+   <widget class="QMenu" name="help">
+    <property name="title">
+     <string>帮助(&amp;H)</string>
+    </property>
+    <addaction name="about"/>
+   </widget>
+   <addaction name="file"/>
+   <addaction name="edit"/>
+   <addaction name="cmd"/>
+   <addaction name="help"/>
+  </widget>
+  <action name="new_server">
+   <property name="icon">
+    <iconset>
+     <normalon>bootstrap-icons-1.0.0/server.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>新建(&amp;N)…</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="new_local">
+   <property name="icon">
+    <iconset>
+     <normalon>bootstrap-icons-1.0.0/laptop.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>新建本地选项卡(&amp;L)</string>
+   </property>
+  </action>
+  <action name="open">
+   <property name="icon">
+    <iconset>
+     <normalon>bootstrap-icons-1.0.0/folder2-open.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>打开(&amp;O)…</string>
+   </property>
+  </action>
+  <action name="close_server">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>bootstrap-icons-1.0.0/x-circle.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>关闭(&amp;C)</string>
+   </property>
+  </action>
+  <action name="quit">
+   <property name="icon">
+    <iconset>
+     <normaloff>bootstrap-icons-1.0.0/box-arrow-up-right.svg</normaloff>bootstrap-icons-1.0.0/box-arrow-up-right.svg</iconset>
+   </property>
+   <property name="text">
+    <string>退出(&amp;X)</string>
+   </property>
+  </action>
+  <action name="copy">
+   <property name="icon">
+    <iconset>
+     <normaloff>bootstrap-icons-1.0.0/clipboard-data.svg</normaloff>bootstrap-icons-1.0.0/clipboard-data.svg</iconset>
+   </property>
+   <property name="text">
+    <string>复制(&amp;C)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="paste">
+   <property name="icon">
+    <iconset>
+     <normaloff>bootstrap-icons-1.0.0/clipboard-plus.svg</normaloff>bootstrap-icons-1.0.0/clipboard-plus.svg</iconset>
+   </property>
+   <property name="text">
+    <string>粘贴(&amp;P)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="select_all">
+   <property name="icon">
+    <iconset>
+     <normaloff>bootstrap-icons-1.0.0/text-paragraph.svg</normaloff>bootstrap-icons-1.0.0/text-paragraph.svg</iconset>
+   </property>
+   <property name="text">
+    <string>全选(&amp;A)</string>
+   </property>
+  </action>
+  <action name="ftp_cmd">
+   <property name="icon">
+    <iconset>
+     <normalon>bootstrap-icons-1.0.0/code.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>FTP 命令(&amp;F)</string>
+   </property>
+  </action>
+  <action name="passive">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Passive</string>
+   </property>
+  </action>
+  <action name="active">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Active</string>
+   </property>
+  </action>
+  <action name="new_dir">
+   <property name="icon">
+    <iconset>
+     <normalon>bootstrap-icons-1.0.0/folder-plus.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>新建文件夹(&amp;N)</string>
+   </property>
+  </action>
+  <action name="new_file">
+   <property name="icon">
+    <iconset>
+     <normalon>bootstrap-icons-1.0.0/file-earmark-plus.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>新建文件(&amp;F)</string>
+   </property>
+  </action>
+  <action name="setting">
+   <property name="icon">
+    <iconset>
+     <normalon>bootstrap-icons-1.0.0/gear.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>设置(&amp;S)…</string>
+   </property>
+  </action>
+  <action name="about">
+   <property name="icon">
+    <iconset>
+     <normalon>bootstrap-icons-1.0.0/question-circle.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>关于(&amp;A)</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
