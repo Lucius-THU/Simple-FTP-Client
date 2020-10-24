@@ -23,6 +23,22 @@ class Ui_Connection(object):
         Connection.setWindowIcon(icon)
         self.gridLayout = QGridLayout(Connection)
         self.gridLayout.setObjectName(u"gridLayout")
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        self.ip = QLineEdit(Connection)
+        self.ip.setObjectName(u"ip")
+
+        self.port = QSpinBox(Connection)
+        self.port.setObjectName(u"port")
+        sizePolicy.setHeightForWidth(self.port.sizePolicy().hasHeightForWidth())
+        self.port.setSizePolicy(sizePolicy)
+        self.port.setMaximum(65535)
+        self.port.setValue(21)
+
+        self.username = QLineEdit(Connection)
+        self.username.setObjectName(u"username")
+
         self.passwd = QLineEdit(Connection)
         self.passwd.setObjectName(u"passwd")
         self.passwd.setEchoMode(QLineEdit.Password)
@@ -31,17 +47,12 @@ class Ui_Connection(object):
 
         self.login = QPushButton(Connection)
         self.login.setObjectName(u"login")
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.login.sizePolicy().hasHeightForWidth())
+
         self.login.setSizePolicy(sizePolicy)
         self.login.setLayoutDirection(Qt.RightToLeft)
+        sizePolicy.setHeightForWidth(self.login.sizePolicy().hasHeightForWidth())
 
         self.gridLayout.addWidget(self.login, 4, 1, 1, 1)
-
-        self.username = QLineEdit(Connection)
-        self.username.setObjectName(u"username")
 
         self.gridLayout.addWidget(self.username, 2, 1, 1, 1)
 
@@ -49,13 +60,6 @@ class Ui_Connection(object):
         self.port_label.setObjectName(u"port_label")
 
         self.gridLayout.addWidget(self.port_label, 1, 0, 1, 1)
-
-        self.port = QSpinBox(Connection)
-        self.port.setObjectName(u"port")
-        sizePolicy.setHeightForWidth(self.port.sizePolicy().hasHeightForWidth())
-        self.port.setSizePolicy(sizePolicy)
-        self.port.setMaximum(65535)
-        self.port.setValue(21)
 
         self.gridLayout.addWidget(self.port, 1, 1, 1, 1)
 
@@ -68,9 +72,6 @@ class Ui_Connection(object):
         self.username_label.setObjectName(u"username_label")
 
         self.gridLayout.addWidget(self.username_label, 2, 0, 1, 1)
-
-        self.ip = QLineEdit(Connection)
-        self.ip.setObjectName(u"ip")
 
         self.gridLayout.addWidget(self.ip, 0, 1, 1, 1)
 
