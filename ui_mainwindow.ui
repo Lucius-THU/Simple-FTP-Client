@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>bootstrap-icons-1.0.0/terminal-fill.svg</normaloff>bootstrap-icons-1.0.0/terminal-fill.svg</iconset>
+    <normaloff>bootstrap-icons-1.0.0/terminal.svg</normaloff>bootstrap-icons-1.0.0/terminal.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -59,22 +59,18 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="0">
+         <widget class="QProgressBar" name="progressBar">
+          <property name="value">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QDockWidget" name="dock">
-   <property name="windowTitle">
-    <string>传输记录</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout"/>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -90,22 +86,11 @@
    </property>
    <widget class="QMenu" name="file">
     <property name="title">
-     <string>文件(&amp;F)</string>
+     <string>会话(&amp;F)</string>
     </property>
     <addaction name="new_server"/>
     <addaction name="separator"/>
     <addaction name="close_server"/>
-    <addaction name="separator"/>
-    <addaction name="setting"/>
-    <addaction name="separator"/>
-    <addaction name="quit"/>
-   </widget>
-   <widget class="QMenu" name="edit">
-    <property name="title">
-     <string>编辑(&amp;E)</string>
-    </property>
-    <addaction name="copy"/>
-    <addaction name="paste"/>
    </widget>
    <widget class="QMenu" name="cmd">
     <property name="title">
@@ -118,18 +103,12 @@
      <addaction name="passive"/>
      <addaction name="active"/>
     </widget>
-    <widget class="QMenu" name="new_path">
-     <property name="title">
-      <string>新建(&amp;N)</string>
-     </property>
-     <addaction name="new_dir"/>
-     <addaction name="new_file"/>
-    </widget>
     <addaction name="conn_mode"/>
     <addaction name="separator"/>
-    <addaction name="new_path"/>
+    <addaction name="new_dir"/>
+    <addaction name="upload"/>
     <addaction name="separator"/>
-    <addaction name="ftp_cmd"/>
+    <addaction name="actionSYST"/>
    </widget>
    <widget class="QMenu" name="help">
     <property name="title">
@@ -138,7 +117,6 @@
     <addaction name="about"/>
    </widget>
    <addaction name="file"/>
-   <addaction name="edit"/>
    <addaction name="cmd"/>
    <addaction name="help"/>
   </widget>
@@ -234,6 +212,9 @@
    </property>
   </action>
   <action name="ftp_cmd">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normalon>bootstrap-icons-1.0.0/code.svg</normalon>
@@ -263,6 +244,9 @@
    </property>
   </action>
   <action name="new_dir">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normalon>bootstrap-icons-1.0.0/folder-plus.svg</normalon>
@@ -300,6 +284,26 @@
    </property>
    <property name="text">
     <string>关于(&amp;A)</string>
+   </property>
+  </action>
+  <action name="upload">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>bootstrap-icons-1.0.0/arrow-up-circle.svg</normaloff>bootstrap-icons-1.0.0/arrow-up-circle.svg</iconset>
+   </property>
+   <property name="text">
+    <string>上传文件</string>
+   </property>
+  </action>
+  <action name="actionSYST">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>SYST 命令</string>
    </property>
   </action>
  </widget>

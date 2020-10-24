@@ -15,6 +15,6 @@ QPushButton:active {
     top: 2px;
 }
 
-QTabWidget, QLabel, QLineEdit, QSpinBox {
+QTabWidget, QLabel, QLineEdit, QSpinBox, QProgressBar {
     font-family: "Microsoft Yahei";
 }
