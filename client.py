@@ -8,8 +8,9 @@ from PySide2.QtCore import QThread, Signal
 pattern = re.compile(r'(\d+),(\d+),(\d+),(\d+),(\d+),(\d+)', re.ASCII)
 
 
+# LIST 指令解析文件信息
 def parse(msg):
-    if msg.find('\t') == -1:
+    if msg.find('\t') == -1: # /bin/ls 格式
         t = re.search(r'[A-Z][a-z]{2}[ \d:]{9}', msg)
         filename = msg[t.end() + 1:]
         edit_time = msg[t.start(): t.end()]
@@ -17,7 +18,7 @@ def parse(msg):
         t = msg.rfind(' ')
         size = msg[t + 1:]
         return [filename, edit_time, size, msg[0] == 'd']
-    else:
+    else: # EPLF 格式
         t = msg.find('\t')
         filename = msg[t + 1:]
         msg = msg[: t]
@@ -27,16 +28,18 @@ def parse(msg):
         size = size_msg[: size_msg.find(',')]
         return [filename, time.strftime("%Y-%m-%d %H:%M:%S", edit_time), size, msg.find('/,') != -1]
 
+# 文件传输类，在子线程中完成上传或下载
 class TransferFile(QThread):
     transfer_finished = Signal(str)
     transfer_happened = Signal(int)
     MAX_SIZE = 8192
 
-    def __init__(self, sock, path, flag):
+    def __init__(self, sock, path, flag, pos=0):
         super().__init__()
         self.sock = sock
         self.path = path
         self.flag = flag
+        self.pos = pos
         self.f = None
 
     def run(self):
@@ -49,7 +52,10 @@ class TransferFile(QThread):
         self.transfer_finished.emit(self.flag)
 
     def retr(self):
-        self.f = open(self.path, 'wb')
+        if self.pos:
+            self.f = open(self.path, 'ab')
+        else:
+            self.f = open(self.path, 'wb')
         while True:
             response = self.sock.recv(Client.MAX_LEN)
             if not response:
@@ -59,6 +65,7 @@ class TransferFile(QThread):
 
     def stor(self):
         self.f = open(self.path, 'rb')
+        self.f.seek(self.pos, 0)
         while True:
             data = self.f.read(TransferFile.MAX_SIZE)
             if not data:
@@ -67,6 +74,7 @@ class TransferFile(QThread):
             self.transfer_happened.emit(len(data))
 
 
+# 记录客户端连接的信息，处理指令
 class Client(QWidget):
     refresh = Signal()
     MAX_LEN = 8192
@@ -75,8 +83,8 @@ class Client(QWidget):
     def __init__(self):
         super(Client, self).__init__()
         self.sock = None
-        self.data_sock = None
-        self.list = None
+        self.data_sock = None # 数据连接 socket
+        self.list = None # LIST 指令获取的解析后的文件信息列表
         self.root = ''
         self.mode = 'passive'
         self.bar = None
@@ -90,7 +98,7 @@ class Client(QWidget):
             self.mode = 'passive'
 
     @staticmethod
-    def get_line(sock):
+    def get_line(sock): # 一次读入
         msg = sock.recv(Client.MAX_LEN)
         try:
             msg = msg.decode('utf-8')
@@ -104,7 +112,7 @@ class Client(QWidget):
             return msg[: -1]
         return msg
 
-    def get_response(self):
+    def get_response(self): # 读完一个信息
         msg = self.get_line(self.sock)
         if msg[3: 4] == '-':
             code = msg[: 3]
@@ -147,6 +155,7 @@ class Client(QWidget):
         if response[: 3] != '200':
             QMessageBox.warning(self, "PORT 命令错误", response, QMessageBox.Ok, QMessageBox.Ok)
 
+    # 根据 mode 执行 PASV 或 PORT
     def data_conn(self):
         self.get_type()
         if self.mode == 'passive':
@@ -167,7 +176,7 @@ class Client(QWidget):
             while True:
                 try:
                     response = self.get_line(self.data_sock)
-                    files = response.split('\r\n')
+                    files = response.split('\r\n')  # 一次读入可能有多条文件信息
                     for i in files:
                         self.list.append(parse(i))
                 except EOFError:
@@ -212,6 +221,11 @@ class Client(QWidget):
         try:
             self.sock.send(msg.encode('utf-8'))
             response = self.get_response()
+            if response[: 3] == '150':
+                if response.find('\r\n') != -1:
+                    response = response.split('\r\n')[1]
+                else:
+                    response = self.get_response()
             if response[: 3] != '257':
                 QMessageBox.warning(self, 'PWD 命令错误', response, QMessageBox.Ok, QMessageBox.Ok)
             else:
@@ -241,6 +255,19 @@ class Client(QWidget):
         except:
             pass
 
+    def get_dele(self, path):
+        msg = 'DELE ' + path + '\r\n'
+        try:
+            self.sock.send(msg.encode('utf-8'))
+            response = self.get_response()
+            if response[: 3] != '250':
+                QMessageBox.warning(self, 'DELE 命令错误', response, QMessageBox.Ok, QMessageBox.Ok)
+            else:
+                self.get_list()
+        except:
+            pass
+
+    # 合并处理 RNFR 和 RNTO 指令
     def get_rename(self, old_name, new_name):
         try:
             msg = 'RNFR ' + old_name + '\r\n'
@@ -264,6 +291,11 @@ class Client(QWidget):
         msg = 'QUIT\r\n'
         self.sock.send(msg.encode('utf-8'))
         response = self.get_response()
+        if response[: 3] == '150':
+            if response.find('\r\n') != -1:
+                response = response.split('\r\n')[1]
+            else:
+                response = self.get_response()
         if response[: 3] != '221':
             QMessageBox.warning(self, 'QUIT 命令错误', response, QMessageBox.Ok, QMessageBox.Ok)
             raise Exception
@@ -272,41 +304,60 @@ class Client(QWidget):
             self.list.clear()
             self.has_access = False
 
-    def get_retr(self, file, path, new_name):
+    def get_retr(self, file, path, new_name=None, sz=0):
+        file_store_name = path
         try:
             self.data_conn()
+            if sz:
+                msg = 'REST ' + str(sz) + '\r\n'
+                self.sock.send(msg.encode('utf-8'))
+                response = self.get_response()
+                if response[: 3] != '350':
+                    QMessageBox.warning(self, 'REST 命令错误', response,
+                                        QMessageBox.Ok, QMessageBox.Ok)
+                    return
+                else:
+                    self.bar.setVisible(True)
             msg = 'RETR ' + file + '\r\n'
             self.sock.send(msg.encode('utf-8'))
             if self.mode == 'active':
                 data_sock, _ = self.data_sock.accept()
                 self.data_sock.close()
                 self.data_sock = data_sock
-            self.transfer_file = TransferFile(self.data_sock, path + '/' + new_name, 'retr')
+            if new_name:
+                file_store_name += '/' + new_name
+            self.transfer_file = TransferFile(self.data_sock, file_store_name, 'retr', sz)
             self.transfer_file.transfer_finished.connect(self.finish_response)
             self.transfer_file.transfer_happened.connect(self.change_bar)
             self.transfer_file.start()
         except:
             pass
 
-    def get_stor(self, file_name, new_name):
+    def get_stor(self, file_name, new_name, sz=0):
         try:
             self.data_conn()
-            msg = 'STOR ' + new_name + '\r\n'
+            if sz:
+                msg = 'APPE ' + new_name + '\r\n'
+                self.bar.setVisible(True)
+            else:
+                msg = 'STOR ' + new_name + '\r\n'
             self.sock.send(msg.encode('utf-8'))
             if self.mode == 'active':
                 data_sock, _ = self.data_sock.accept()
                 self.data_sock.close()
                 self.data_sock = data_sock
-            self.transfer_file = TransferFile(self.data_sock, file_name, 'stor')
+            self.transfer_file = TransferFile(self.data_sock, file_name, 'stor', sz)
             self.transfer_file.transfer_finished.connect(self.finish_response)
             self.transfer_file.transfer_happened.connect(self.change_bar)
             self.transfer_file.start()
         except:
             pass
 
+    # 槽函数，根据 TransferFile 发出的信号改变进度条
     def change_bar(self, val):
         self.bar.setValue(self.bar.value() + val)
 
+    # 槽函数，文件传输结束
     def finish_response(self, flag):
         response = self.get_response()
         if response[: 3] == '150':

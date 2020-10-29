@@ -12,29 +12,30 @@ class Connection(QDialog, Ui_Connection):
             self.setStyleSheet(qs.read())
         self.login.clicked.connect(self.conn_request)
 
+    # 请求建立连接
     def conn_request(self):
         self.login.setEnabled(False)
         try:
-            self.client.sock = socket.create_connection((self.ip.text(), self.port.value()))
+            self.client.sock = socket.create_connection((self.ip.text(), self.port.value())) # 建立 TCP 连接
             response = self.client.get_response()
             while response[0] == '1':
                 response = self.client.get_response()
             if response[: 3] != '220':
                 QMessageBox.warning(self, "无法连接", response, QMessageBox.Ok, QMessageBox.Ok)
             else:
-                msg = 'USER ' + self.username.text() + '\r\n'
+                msg = 'USER ' + self.username.text() + '\r\n' # USER 指令
                 self.client.sock.send(msg.encode('utf-8'))
                 response = self.client.get_response()
                 if response[: 2] == '33':
-                    msg = 'PASS ' + self.passwd.text() + '\r\n'
+                    msg = 'PASS ' + self.passwd.text() + '\r\n' # PASS 指令
                     self.client.sock.send(msg.encode('utf-8'))
                     response = self.client.get_response()
                 if response[: 3] != '230':
                     QMessageBox.warning(self, "无法登录", response, QMessageBox.Ok, QMessageBox.Ok)
                 else:
                     self.client.has_access = True
-                    self.client.get_list()
-                    self.close()
+                    self.client.get_list() # LIST 指令，获取根目录列表
+                    self.close() # 关闭新建会话窗口
                     return
         except ConnectionRefusedError:
             QMessageBox.warning(self, "无法连接", "无法连接到给定主机端口", QMessageBox.Ok, QMessageBox.Ok)

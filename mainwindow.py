@@ -9,6 +9,7 @@ import os
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
+    # 信号与槽建立连接，并手动设置一部分界面
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
@@ -48,44 +49,79 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.rmd.triggered.connect(self.on_rmd_triggered)
         self.rename = QAction(u'重命名', self)
         self.rename.triggered.connect(self.on_rename_triggered)
+        self.upload_appe = QAction(u'继续上传', self)
+        self.upload_appe.triggered.connect(self.on_upload_appe_triggered)
+        self.retr_rest = QAction(u'继续下载', self)
+        self.retr_rest.triggered.connect(self.on_retr_rest_triggered)
         self.table_menu.addAction(self.open)
         self.table_menu.addAction(self.rmd)
         self.table_menu.addAction(self.rename)
         self.table_menu.addAction(self.mkd)
+        self.table_menu.addAction(self.upload_appe)
+        self.table_menu.addAction(self.retr_rest)
         self.about.triggered.connect(self.get_about)
 
     def get_about(self):
         QMessageBox.information(self, u"关于", 'FTP Client\r\nVer 1.0.0\r\nAuthor: Luo Cheng - 2018013013', QMessageBox.Ok, QMessageBox.Ok)
 
+    # 显示右键菜单
     def menu_show(self, _):
         flag = self.client.list[self.file_list.currentRow()][3]
-        if flag:
-            self.open.setText(u'打开')
+        self.retr_rest.setVisible(False)
+        self.upload_appe.setVisible(False)
+        if self.file_list.currentRow() >= 0:
+            self.open.setVisible(True)
+            if flag:  # 选中文件夹显示为 打开
+                self.open.setText(u'打开')
+            else: # 选中文件显示 下载、继续上传、继续下载
+                self.open.setText(u'下载')
+                self.retr_rest.setVisible(True)
+                self.upload_appe.setVisible(True)
         else:
-            self.open.setText(u'下载')
-        self.rmd.setVisible(flag and self.file_list.currentRow())
+            self.open.setVisible(False)
+        self.rmd.setVisible(self.file_list.currentRow() >= 0)
+        self.rename.setVisible(self.file_list.currentRow() >= 0)
         self.table_menu.exec_(QCursor.pos())
 
+    # 右键打开/下载 相当于双击
     def right_click_open(self):
         self.double_click(self.file_list.currentItem())
 
+    # 槽函数，删除文件夹
     def on_rmd_triggered(self):
+        if self.progressBar.isVisible():
+            QMessageBox.warning(self, "当前有文件正在传输", u'请等待文件传输结束', QMessageBox.Ok,
+                                QMessageBox.Ok)
+            return
         item = self.file_list.item(self.file_list.currentItem().row(), 0)
         if self.client.list[item.row()][3]:
             self.client.get_rmd(item.text())
-            self.fill_table()
+        else:
+            self.client.get_dele(item.text())
+        self.fill_table()
 
+    # 槽函数，重命名
     def on_rename_triggered(self):
+        if self.progressBar.isVisible():
+            QMessageBox.warning(self, "当前有文件正在传输", u'请等待文件传输结束', QMessageBox.Ok,
+                                QMessageBox.Ok)
+            return
         item = self.file_list.item(self.file_list.currentItem().row(), 0)
         dlg = Dialog(self.client, self.client.list[item.row()][3], self.progressBar, item.text())
         dlg.exec_()
         self.fill_table()
 
+    # 槽函数，新建文件夹
     def on_mkd_triggered(self):
+        if self.progressBar.isVisible():
+            QMessageBox.warning(self, "当前有文件正在传输", u'请等待文件传输结束', QMessageBox.Ok,
+                                QMessageBox.Ok)
+            return
         dlg = Dialog(self.client, True, self.progressBar)
         dlg.exec_()
         self.fill_table()
 
+    # 在 LIST 指令后，将获取的文件信息加载到表格
     def fill_table(self):
         self.file_list.clear()
         self.file_list.setHorizontalHeaderItem(0, QTableWidgetItem(u'名称'))
@@ -104,6 +140,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if not item[3]:
                 self.file_list.setItem(i, 2, QTableWidgetItem(item[2]))
 
+    # 新建会话
     def start_conn(self):
         dialog = Connection(self.client)
         dialog.exec_()
@@ -119,7 +156,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.upload.setEnabled(True)
             self.path.setText(u'当前路径：' + self.client.root)
 
+    # 关闭会话，发出 QUIT 指令，可能因文件正在传输而失败
     def close_conn(self):
+        if self.progressBar.isVisible():
+            QMessageBox.warning(self, "当前有文件正在传输", u'请等待文件传输结束', QMessageBox.Ok,
+                                QMessageBox.Ok)
+            return
         try:
             self.client.quit()
             self.new_server.setEnabled(True)
@@ -132,19 +174,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except Exception:
             pass
 
+     # 双击，打开文件夹或下载文件
     def double_click(self, item):
+        if self.progressBar.isVisible():
+            QMessageBox.warning(self, "当前有文件正在传输", u'请等待文件传输结束', QMessageBox.Ok,
+                                QMessageBox.Ok)
+            return
         row = item.row()
         item = self.file_list.item(row, 0)
-        if self.client.list[item.row()][3]:
+        if self.client.list[item.row()][3]:  # 打开文件夹
             self.client.get_cwd(item.text())
             self.client.get_list()
             self.fill_table()
             self.client.get_pwd()
             self.path.setText(u'当前路径：' + self.client.root)
-        else:
+        else:  # 下载文件
             path = self.temp
             if not path:
                 path = QDir.homePath()
+            # 下载文件需选择保存位置
             dir_name = QFileDialog.getExistingDirectory(self, u'选择保存路径', path, QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
             if dir_name:
                 self.temp = dir_name
@@ -153,7 +201,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 dlg = Dialog(self.client, False, self.progressBar, item.text(), 'download', self.temp)
                 dlg.exec_()
 
+    # 断点续传、下载
+    def on_retr_rest_triggered(self):
+        item = self.file_list.item(self.file_list.currentRow(), 0).text()
+        sz = self.file_list.item(self.file_list.currentRow(), 2).text()
+        path = self.temp
+        if not path:
+            path = QDir.homePath()
+        file_name = QFileDialog.getOpenFileName(self, u"选择续传文件", path,
+                                                "All Files(*.*)")
+        if file_name:
+            self.temp = QDir(file_name[0]).path()
+            self.progressBar.setMaximum(int(sz))
+            self.progressBar.setValue(int(os.path.getsize(file_name[0])))
+            self.client.get_retr(item, file_name[0], None, int(os.path.getsize(file_name[0])))
+
+    # 断点续传，上传
+    def on_upload_appe_triggered(self):
+        item = self.file_list.item(self.file_list.currentRow(), 0).text()
+        sz = self.file_list.item(self.file_list.currentRow(), 2).text()
+        path = self.temp
+        if not path:
+            path = QDir.homePath()
+        file_name = QFileDialog.getOpenFileName(self, u"选择续传文件", path,
+                                                "All Files(*.*)")
+        if file_name:
+            self.temp = QDir(file_name[0]).path()
+            self.progressBar.setMaximum(int(os.path.getsize(file_name[0])))
+            self.progressBar.setValue(int(sz))
+            self.client.get_stor(file_name[0], item, int(sz))
+
     def upload_file(self):
+        if self.progressBar.isVisible():
+            QMessageBox.warning(self, "当前有文件正在传输", u'请等待文件传输结束', QMessageBox.Ok,
+                                QMessageBox.Ok)
+            return
         path = self.temp
         if not path:
             path = QDir.homePath()

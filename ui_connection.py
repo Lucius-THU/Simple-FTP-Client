@@ -19,7 +19,7 @@ class Ui_Connection(object):
             Connection.setObjectName(u"Connection")
         Connection.resize(325, 305)
         icon = QIcon()
-        icon.addFile(u"bootstrap-icons-1.0.0/server.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u"icons/server.svg", QSize(), QIcon.Normal, QIcon.Off)
         Connection.setWindowIcon(icon)
         self.gridLayout = QGridLayout(Connection)
         self.gridLayout.setObjectName(u"gridLayout")
